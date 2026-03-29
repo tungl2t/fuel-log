@@ -18,7 +18,7 @@ interface Option<T extends string> {
   badge: string;
 }
 
-// ─── Chip row ─────────────────────────────────────────────────────────────────
+// ─── Chip selector row ────────────────────────────────────────────────────────
 function OptionChip<T extends string>({
   options,
   selected,
@@ -94,13 +94,12 @@ function SectionLabel({ icon, children }: { icon: React.ReactNode; children: Rea
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstTime = false }) => {
   const { settings, updateSettings, t } = useLanguage();
 
-  // Component fully remounts when opened (conditionally rendered in App.tsx),
-  // so `draft` natively initialises with the most up-to-date Supabase settings.
+  // Fully remounts on each open (App.tsx conditionally renders this),
+  // so `draft` always initialises from the latest loaded settings.
   const [draft, setDraft] = useState<AppSettings>(settings);
 
   if (!isOpen) return null;
 
-  // Dirty check — has anything changed compared to saved settings?
   const isDirty = (Object.keys(draft) as (keyof AppSettings)[]).some(
     (k) => draft[k] !== settings[k]
   );
@@ -109,7 +108,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
     setDraft(prev => ({ ...prev, [key]: value }));
 
   const handleSave = () => {
-    updateSettings(draft); // saves state + upserts to Supabase
+    updateSettings(draft);
     onClose();
   };
 
@@ -139,9 +138,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
         onClick={(e) => e.stopPropagation()}
         style={{ animation: 'slideUp 0.3s ease forwards' }}
       >
-        {/* Header */}
+        {/* Header — same as Modal.tsx */}
         <div className="modal-header">
-          <h2 className="card-title" style={{ marginBottom: 0, fontSize: '1.1rem' }}>
+          <h2 className="card-title" style={{ marginBottom: 0 }}>
             {isFirstTime ? '👋 ' : ''}{t('settingsTitle')}
           </h2>
           <button onClick={onClose} className="modal-close-btn" title={t('close')}>
@@ -149,31 +148,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
           </button>
         </div>
 
-        {/* First-time welcome banner */}
-        {isFirstTime && (
-          <div style={{
-            margin: '0 1.5rem',
-            padding: '0.875rem 1rem',
-            background: 'rgba(154,177,122,0.12)',
-            border: '1.5px solid rgba(154,177,122,0.35)',
-            borderRadius: '0.875rem',
-            fontSize: '0.875rem',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.5,
-          }}>
-            Welcome! Set your preferred units and language below. You can change these any time.
-          </div>
-        )}
+        {/* Body — same scrollable container as Modal.tsx modal-body */}
+        <div className="modal-body">
 
-        {/* Body */}
-        <div className="modal-body" style={{ padding: '0.5rem 1.5rem 0', flex: 1 }}>
+          {/* First-time welcome banner */}
+          {isFirstTime && (
+            <div style={{
+              padding: '0.875rem 1rem',
+              background: 'rgba(154,177,122,0.12)',
+              border: '1.5px solid rgba(154,177,122,0.35)',
+              borderRadius: '0.875rem',
+              fontSize: '0.875rem',
+              color: 'var(--text-secondary)',
+              lineHeight: 1.5,
+              marginBottom: '0.5rem',
+            }}>
+              Welcome! Set your preferred units and language. You can change these any time from the Settings button.
+            </div>
+          )}
 
           {/* Language */}
           <SectionLabel icon={<Globe size={13} />}>{t('language')}</SectionLabel>
           <OptionChip options={langOptions} selected={draft.lang} onSelect={(v) => patch('lang', v)} />
 
-          <div style={{ height: '1px', background: 'var(--border-color)', margin: '1.1rem 0 0' }} />
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-secondary)', marginTop: '1.1rem' }}>
+          <div style={{ height: '1px', background: 'var(--border-color)', margin: '1.25rem 0 0' }} />
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-secondary)', marginTop: '1.25rem' }}>
             {t('units')}
           </div>
 
@@ -188,34 +187,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
           {/* Currency */}
           <SectionLabel icon={<DollarSign size={13} />}>{t('currencyUnit')}</SectionLabel>
           <OptionChip options={currencyOptions} selected={draft.currency} onSelect={(v) => patch('currency', v)} />
-        </div>
 
-        {/* Footer — Save button */}
-        <div style={{
-          padding: '1.25rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px))',
-          display: 'flex',
-          gap: '0.75rem',
-          alignItems: 'center',
-          borderTop: `1px solid ${isDirty ? 'rgba(154,177,122,0.3)' : 'var(--border-color)'}`,
-          marginTop: '0',
-          transition: 'border-color 0.2s',
-          backgroundColor: 'white',
-        }}>
-          {isDirty && (
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', flex: 1 }}>
-              Unsaved changes
-            </span>
-          )}
-          <div style={{ display: 'flex', gap: '0.75rem', marginLeft: 'auto' }}>
-            <button className="btn btn-secondary" onClick={onClose} style={{ minWidth: '80px' }}>
+          {/* ── CTA buttons — inline, same style as FuelLogForm ── */}
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.75rem' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary"
+              style={{ flex: 1 }}
+            >
               {t('close')}
             </button>
             <button
+              type="button"
               className="btn btn-primary"
               onClick={handleSave}
               disabled={!isDirty}
               style={{
-                minWidth: '140px',
+                flex: 2,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -229,6 +218,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
               {t('saveSettings')}
             </button>
           </div>
+
         </div>
       </div>
     </div>,
