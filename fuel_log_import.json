@@ -1,0 +1,17 @@
+[
+  { "date": "2025-04-21", "km": 145061, "liters": 45.109, "pricePerLiter": 18850 },
+  { "date": "2025-04-28", "km": 145580, "liters": 50.947, "pricePerLiter": 19630 },
+  { "date": "2025-05-16", "km": 145950, "liters": 49.526, "pricePerLiter": 19590 },
+  { "date": "2025-05-30", "km": 146404, "liters": 50.105, "pricePerLiter": 19560 },
+  { "date": "2025-06-12", "km": 146856, "liters": 49.267, "pricePerLiter": 19690 },
+  { "date": "2025-07-18", "km": 147288, "liters": 51.72, "pricePerLiter": 19920 },
+  { "date": "2025-07-31", "km": 147817, "liters": 55.84, "pricePerLiter": 19700 },
+  { "date": "2025-08-11", "km": 148291, "liters": 48.331, "pricePerLiter": 20070 },
+  { "date": "2025-08-31", "km": 148770, "liters": 49.12, "pricePerLiter": 20360 },
+  { "date": "2025-11-01", "km": 149244, "liters": 58.6, "pricePerLiter": 20480 },
+  { "date": "2025-12-04", "km": 149766, "liters": 59.003, "pricePerLiter": 20000 },
+  { "date": "2025-12-22", "km": 150421, "liters": 63.28, "pricePerLiter": 19620 },
+  { "date": "2026-01-05", "km": 150971, "liters": 58.425, "pricePerLiter": 19710 },
+  { "date": "2026-02-11", "km": 151410, "liters": 53.627, "pricePerLiter": 19580 },
+  { "date": "2026-03-26", "km": 152012, "liters": 63.923, "pricePerLiter": 30350 }
+]
