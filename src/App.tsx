@@ -13,7 +13,7 @@ import type { Session } from '@supabase/supabase-js';
 import type { CalculatedEntry } from './hooks/useFuelLog';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
-const currentYear = String(new Date().getFullYear());
+
 
 // ─── Inner app (has access to LanguageContext) ───────────────────────────────
 function AppInner({ session }: { session: Session }) {
@@ -23,7 +23,7 @@ function AppInner({ session }: { session: Session }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Year-based filter state
-  const [rangeType, setRangeType] = useState<RangeType>(currentYear);
+  const [rangeType, setRangeType] = useState<RangeType>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState(new Date().toISOString().split('T')[0]);
 

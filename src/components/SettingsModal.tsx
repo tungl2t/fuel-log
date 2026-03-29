@@ -133,11 +133,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
   ];
 
   return ReactDOM.createPortal(
-    <div className="modal-overlay" onClick={onClose} style={{ alignItems: 'center' }}>
+    <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-content"
+        className="modal-content settings-modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ animation: 'slideUp 0.3s ease forwards', maxWidth: '440px' }}
+        style={{ animation: 'slideUp 0.3s ease forwards' }}
       >
         {/* Header */}
         <div className="modal-header">
@@ -192,13 +192,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
 
         {/* Footer — Save button */}
         <div style={{
-          padding: '1rem 1.5rem 1.5rem',
+          padding: '1rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px))',
           display: 'flex',
           gap: '0.75rem',
           alignItems: 'center',
           borderTop: `1px solid ${isDirty ? 'rgba(154,177,122,0.3)' : 'var(--border-color)'}`,
           marginTop: '1.25rem',
           transition: 'border-color 0.2s',
+          backgroundColor: 'white',
         }}>
           {isDirty && (
             <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', flex: 1 }}>
