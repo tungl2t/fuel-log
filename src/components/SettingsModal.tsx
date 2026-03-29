@@ -94,8 +94,8 @@ function SectionLabel({ icon, children }: { icon: React.ReactNode; children: Rea
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstTime = false }) => {
   const { settings, updateSettings, t } = useLanguage();
 
-  // Component unmounts when !isOpen (due to early return below),
-  // so useState always initialises fresh from current settings on each open.
+  // Component fully remounts when opened (conditionally rendered in App.tsx),
+  // so `draft` natively initialises with the most up-to-date Supabase settings.
   const [draft, setDraft] = useState<AppSettings>(settings);
 
   if (!isOpen) return null;
@@ -166,7 +166,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
         )}
 
         {/* Body */}
-        <div style={{ padding: '0.5rem 1.5rem 0' }}>
+        <div className="modal-body" style={{ padding: '0.5rem 1.5rem 0', flex: 1 }}>
 
           {/* Language */}
           <SectionLabel icon={<Globe size={13} />}>{t('language')}</SectionLabel>
@@ -192,12 +192,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, isFirstT
 
         {/* Footer — Save button */}
         <div style={{
-          padding: '1rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px))',
+          padding: '1.25rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px))',
           display: 'flex',
           gap: '0.75rem',
           alignItems: 'center',
           borderTop: `1px solid ${isDirty ? 'rgba(154,177,122,0.3)' : 'var(--border-color)'}`,
-          marginTop: '1.25rem',
+          marginTop: '0',
           transition: 'border-color 0.2s',
           backgroundColor: 'white',
         }}>

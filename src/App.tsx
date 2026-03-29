@@ -170,11 +170,13 @@ function AppInner({ session }: { session: Session }) {
       </Modal>
 
       {/* Settings modal */}
-      <SettingsModal
-        isOpen={settingsOpen}
-        isFirstTime={isFirstTime}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+      {settingsOpen && (
+        <SettingsModal
+          isOpen={true}
+          isFirstTime={isFirstTime}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
 
       <footer style={{ marginTop: '3rem', textAlign: 'center', padding: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
         <p>&copy; {new Date().getFullYear()} Fuel Log Tracker.</p>
