@@ -10,7 +10,7 @@ interface FuelLogDashboardProps {
 }
 
 const FuelLogDashboard: React.FC<FuelLogDashboardProps> = ({ stats, entries }) => {
-  const { t, fmtDistance, fmtConsumption, fmtTotal, fmtCostPer100, fmtPricePerUnit, distanceLabel, consumptionLabel, costPer100Label } = useLanguage();
+  const { t, fmtDistance, fmtConsumption, fmtTotal, fmtCostPer100, fmtPricePerUnit, distanceLabel, consumptionLabel, costPer100Label, lang } = useLanguage();
 
   const chartData = [...entries]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -68,8 +68,18 @@ const FuelLogDashboard: React.FC<FuelLogDashboardProps> = ({ stats, entries }) =
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis dataKey="date" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false}
-                tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+              <YAxis 
+                stroke="var(--text-secondary)" 
+                fontSize={12} 
+                tickLine={false} 
+                axisLine={false}
+                tickFormatter={(v) => {
+                  const val = v / 1000;
+                  return new Intl.NumberFormat(lang === 'vi' ? 'vi-VN' : 'en-US', {
+                    maximumFractionDigits: 0
+                  }).format(val) + 'k';
+                }} 
+              />
               <Tooltip
                 contentStyle={{ backgroundColor: 'rgba(15,15,20,0.95)', borderColor: 'var(--border-color)', borderRadius: '0.75rem', color: 'white' }}
                 itemStyle={{ color: 'var(--accent-color)' }}

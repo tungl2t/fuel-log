@@ -22,10 +22,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   currency: 'usd',
 };
 
-// ─── Conversion constants ────────────────────────────────────────────────────
-const KM_TO_MILE = 0.621371;
-const LITER_TO_GALLON = 0.264172;
-const GALLON_TO_LITER = 3.78541;
 
 const CURRENCY_SYMBOLS: Record<CurrencyUnit, string> = {
   vnd: 'đ',
@@ -155,28 +151,23 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children, us
     };
 
     const fmtDistance = (km: number, dec?: number): string =>
-      fmtNum(distance === 'mile' ? km * KM_TO_MILE : km, dec ?? 0);
+      fmtNum(km, dec ?? 0);
 
     const fmtVolume = (liters: number, dec?: number): string =>
-      fmtNum(volume === 'gallon' ? liters * LITER_TO_GALLON : liters, dec ?? 3);
+      fmtNum(liters, dec ?? 3);
 
     const fmtConsumption = (lPer100km: number | null): string => {
       if (lPer100km == null || lPer100km === 0) return '-';
-      if (volume === 'gallon' && distance === 'mile') return fmtNum(235.215 / lPer100km, 1); // MPG
-      if (volume === 'gallon') return fmtNum(lPer100km * LITER_TO_GALLON, 3);
-      if (distance === 'mile') return fmtNum(lPer100km * 1.60934, 3);
       return fmtNum(lPer100km, 3);
     };
 
     const fmtCostPer100 = (costPer100km: number | null): string => {
       if (costPer100km == null) return '-';
-      const val = distance === 'mile' ? costPer100km * 1.60934 : costPer100km;
-      return fmtCurrency(val);
+      return fmtCurrency(costPer100km);
     };
 
     const fmtPricePerUnit = (pricePerLiter: number): string => {
-      const val = volume === 'gallon' ? pricePerLiter * GALLON_TO_LITER : pricePerLiter;
-      return fmtCurrency(val);
+      return fmtCurrency(pricePerLiter);
     };
 
     const fmtTotal = (amount: number): string => fmtCurrency(amount);
