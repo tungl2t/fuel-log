@@ -8,7 +8,7 @@ import Auth from './components/Auth';
 import TimeRangeFilter, { type RangeType } from './components/TimeRangeFilter';
 import SettingsModal from './components/SettingsModal';
 import { supabase } from './lib/supabase';
-import { Droplets, LogOut, Settings } from 'lucide-react';
+import { Droplets, LogOut, Settings, Menu, X } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import type { CalculatedEntry } from './hooks/useFuelLog';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
@@ -21,11 +21,21 @@ function AppInner({ session }: { session: Session }) {
   const [editingEntry, setEditingEntry] = useState<CalculatedEntry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Year-based filter state
   const [rangeType, setRangeType] = useState<RangeType>('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Handle body scroll locking when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    return () => document.body.classList.remove('no-scroll');
+  }, [isMobileMenuOpen]);
 
   // Open settings on first login or when user clicks settings button
   // isFirstTime drives the initial open; after that it's user-controlled
@@ -103,8 +113,8 @@ function AppInner({ session }: { session: Session }) {
           </div>
         </div>
 
-        {/* Right: settings + sign out only */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        {/* Desktop actions: settings + sign out */}
+        <div className="desktop-actions" style={{ gap: '0.5rem', alignItems: 'center' }}>
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="btn btn-secondary"
@@ -121,6 +131,16 @@ function AppInner({ session }: { session: Session }) {
             title={t('signOut')}
           >
             <LogOut size={18} />
+          </button>
+        </div>
+
+        <div className="mobile-actions">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="btn btn-secondary"
+            style={{ padding: '0.5rem', borderRadius: '0.75rem', border: 'none', background: 'transparent' }}
+          >
+            <Menu size={28} />
           </button>
         </div>
       </header>
@@ -181,6 +201,66 @@ function AppInner({ session }: { session: Session }) {
       <footer style={{ marginTop: '3rem', textAlign: 'center', padding: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
         <p>&copy; {new Date().getFullYear()} Fuel Log Tracker.</p>
       </footer>
+
+      {/* Mobile sidebar (rendered outside main content to avoid stacking context issues) */}
+      {isMobileMenuOpen && (
+        <>
+          <div 
+            className="mobile-menu-overlay"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="mobile-sidebar">
+            <div className="mobile-sidebar-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ padding: '0.5rem', background: 'var(--accent-color)', borderRadius: '0.625rem' }}>
+                  <Droplets size={20} color="white" />
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+                  Fuel <span style={{ color: 'var(--accent-color)' }}>Log</span>
+                </h2>
+              </div>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="modal-close-btn"
+                style={{ background: 'rgba(0,0,0,0.05)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="mobile-sidebar-content">
+              <button
+                onClick={() => {
+                  setIsSettingsOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="mobile-menu-item"
+              >
+                <Settings size={22} />
+                <span>{t('settings')}</span>
+              </button>
+              <button
+                onClick={() => {
+                  supabase.auth.signOut();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="mobile-menu-item"
+                style={{ color: 'var(--danger-color)' }}
+              >
+                <LogOut size={22} />
+                <span>{t('signOut')}</span>
+              </button>
+            </div>
+
+            <div className="mobile-sidebar-footer">
+              <p style={{ opacity: 0.7 }}>{t('appTagline')}</p>
+              <p style={{ marginTop: '0.5rem', fontSize: '0.7rem' }}>
+                &copy; {new Date().getFullYear()} Fuel Log Tracker
+              </p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
