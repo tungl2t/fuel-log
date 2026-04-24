@@ -18,6 +18,11 @@ const en = {
   totalSpending: 'Total Spending',
   avgCostPer100km: 'Avg Cost/100',
   fuelPriceTrend: 'Fuel Price Trend (per unit)',
+  longestDistance: 'Longest Fill Distance',
+  shortestDistance: 'Shortest Fill Distance',
+  highestPrice: 'Highest Price/Unit',
+  lowestPrice: 'Lowest Price/Unit',
+  statAt: 'on',
 
   // Table
   recentLogs: 'Recent Fuel Logs',
@@ -104,6 +109,11 @@ const vi: typeof en = {
   totalSpending: 'Tổng chi phí',
   avgCostPer100km: 'Chi phí TB/100',
   fuelPriceTrend: 'Biến động giá xăng',
+  longestDistance: 'Quãng đường dài nhất',
+  shortestDistance: 'Quãng đường ngắn nhất',
+  highestPrice: 'Giá/đơn vị cao nhất',
+  lowestPrice: 'Giá/đơn vị thấp nhất',
+  statAt: 'ngày',
 
   // Table
   recentLogs: 'Nhật ký nhiên liệu',

@@ -17,12 +17,21 @@ export interface CalculatedEntry extends FuelEntry {
   pricePer100km?: number;
 }
 
+export interface StatRecord {
+  value: number;
+  date: string;
+}
+
 export interface Stats {
   totalKm: number;
   totalLiters: number;
   totalSpent: number;
   avgConsumption: number;
   avgPricePer100km: number;
+  longestDistance: StatRecord | null;
+  shortestDistance: StatRecord | null;
+  highestPrice: StatRecord | null;
+  lowestPrice: StatRecord | null;
 }
 
 export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: Date }) => {
@@ -43,7 +52,7 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
       console.error('Error fetching entries:', error);
     } else {
       const mappedData = (data || []).map(item => ({
-        id: item.id,
+        id: String(item.id),
         date: item.date,
         km: item.km,
         liters: item.liters,
@@ -111,24 +120,40 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
 
   const stats = useMemo((): Stats => {
     const rangeEntries = [...filteredCalculatedEntries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
+
+    const nullRecords = { longestDistance: null, shortestDistance: null, highestPrice: null, lowestPrice: null };
+
     if (rangeEntries.length === 0) {
-      return { totalKm: 0, totalLiters: 0, totalSpent: 0, avgConsumption: 0, avgPricePer100km: 0 };
+      return { totalKm: 0, totalLiters: 0, totalSpent: 0, avgConsumption: 0, avgPricePer100km: 0, ...nullRecords };
     }
+
+    // Price records use all entries (price is per fill, independent of distance)
+    const byPrice = [...rangeEntries].sort((a, b) => a.pricePerLiter - b.pricePerLiter);
+    const highestPrice: StatRecord = { value: byPrice[byPrice.length - 1].pricePerLiter, date: byPrice[byPrice.length - 1].date };
+    const lowestPrice: StatRecord = { value: byPrice[0].pricePerLiter, date: byPrice[0].date };
 
     if (rangeEntries.length < 2) {
       const totalSpent = rangeEntries.reduce((acc, curr) => acc + curr.totalCost, 0);
       const totalLiters = rangeEntries.reduce((acc, curr) => acc + curr.liters, 0);
-      return { totalKm: 0, totalLiters, totalSpent, avgConsumption: 0, avgPricePer100km: 0 };
+      return { totalKm: 0, totalLiters, totalSpent, avgConsumption: 0, avgPricePer100km: 0, longestDistance: null, shortestDistance: null, highestPrice, lowestPrice };
     }
 
     const totalKm = rangeEntries[rangeEntries.length - 1].km - rangeEntries[0].km;
-    // For stats logic: distance/consumption within the range is the sum of their individual calculations
     const totalLiters = rangeEntries.slice(1).reduce((acc, curr) => acc + curr.liters, 0);
     const totalSpent = rangeEntries.slice(1).reduce((acc, curr) => acc + curr.totalCost, 0);
 
     const avgConsumption = totalKm > 0 ? (totalLiters / totalKm) * 100 : 0;
     const avgPricePer100km = totalKm > 0 ? (totalSpent / totalKm) * 100 : 0;
+
+    // Distance records use only entries that have a computed distance (index > 0)
+    const withDistance = rangeEntries.filter(e => e.distance != null && e.distance > 0) as (typeof rangeEntries[0] & { distance: number })[];
+    let longestDistance: StatRecord | null = null;
+    let shortestDistance: StatRecord | null = null;
+    if (withDistance.length > 0) {
+      const byDist = [...withDistance].sort((a, b) => a.distance - b.distance);
+      shortestDistance = { value: byDist[0].distance, date: byDist[0].date };
+      longestDistance = { value: byDist[byDist.length - 1].distance, date: byDist[byDist.length - 1].date };
+    }
 
     return {
       totalKm,
@@ -136,6 +161,10 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
       totalSpent,
       avgConsumption,
       avgPricePer100km,
+      longestDistance,
+      shortestDistance,
+      highestPrice,
+      lowestPrice,
     };
   }, [filteredCalculatedEntries]);
 
@@ -161,14 +190,14 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
     } else if (data && data[0]) {
       // Map back to camelCase for the UI state
       const mappedNewEntry = {
-        id: data[0].id,
+        id: String(data[0].id),
         date: data[0].date,
         km: data[0].km,
         liters: data[0].liters,
         pricePerLiter: data[0].price_per_liter,
         user_id: data[0].user_id
       };
-      setEntries([...entries, mappedNewEntry]);
+      setEntries(prev => [...prev, mappedNewEntry]);
     }
   };
 
@@ -176,18 +205,19 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
     if (!userId) return;
 
     // Map camelCase from UI to snake_case for DB
+    // We don't include user_id in updates as it's already set and might be restricted by RLS
     const dbEntry = {
       date: entry.date,
       km: entry.km,
       liters: entry.liters,
       price_per_liter: entry.pricePerLiter,
-      user_id: userId
     };
 
     const { data, error } = await supabase
       .from('fuel_entries')
       .update(dbEntry)
       .eq('id', id)
+      .eq('user_id', userId)  // Required for RLS to match and allow the update
       .select();
 
     if (error) {
@@ -195,14 +225,16 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
     } else if (data && data[0]) {
       // Map back to camelCase for the UI state
       const mappedUpdatedEntry = {
-        id: data[0].id,
+        id: String(data[0].id),
         date: data[0].date,
         km: data[0].km,
         liters: data[0].liters,
         pricePerLiter: data[0].price_per_liter,
         user_id: data[0].user_id
       };
-      setEntries(entries.map(e => e.id === id ? mappedUpdatedEntry : e));
+      setEntries(prev => prev.map(e => e.id === String(id) ? mappedUpdatedEntry : e));
+    } else {
+      console.warn('Update returned no data — row may not exist or RLS blocked it:', { id, userId });
     }
   };
 
@@ -215,7 +247,7 @@ export const useFuelLog = (userId?: string, dateFilter?: { start?: Date; end?: D
     if (error) {
       console.error('Error deleting entry:', error);
     } else {
-      setEntries(entries.filter(e => e.id !== id));
+      setEntries(prev => prev.filter(e => e.id !== String(id)));
     }
   };
 

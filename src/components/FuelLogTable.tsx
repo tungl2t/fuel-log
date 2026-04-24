@@ -96,7 +96,7 @@ const FuelLogTable: React.FC<FuelLogTableProps> = ({
               <th>{t('colKm')}</th>
               <th>{t('colLiters')} ({volumeLabel})</th>
               <th>{t('colPriceL')}</th>
-              <th>{t('colTotal')}</th>
+              <th className="col-total">{t('colTotal')}</th>
               <th>{t('colDistance')} ({distanceLabel})</th>
               <th>{t('colL100')} ({consumptionLabel})</th>
               <th>{t('colCost100')} ({costPer100Label})</th>
@@ -115,14 +115,14 @@ const FuelLogTable: React.FC<FuelLogTableProps> = ({
                 <tr key={entry.id}>
                   <td data-label={t('colDate')}>{fmtDate(entry.date)}</td>
                   <td data-label={t('colKm')}>{fmtDistance(entry.km)}</td>
-                  <td data-label={t('colLiters')}>{fmtVolume(entry.liters)}</td>
+                  <td data-label={`${t('colLiters')} (${volumeLabel})`}>{fmtVolume(entry.liters)}</td>
                   <td data-label={t('colPriceL')}>{fmtPricePerUnit(entry.pricePerLiter)}</td>
-                  <td data-label={t('colTotal')}>{fmtCurrency(entry.totalCost)}</td>
-                  <td data-label={t('colDistance')}>{entry.distance ? fmtDistance(entry.distance) : '-'}</td>
-                  <td data-label={t('colL100')} style={{ color: entry.consumption ? 'var(--accent-color)' : 'inherit', fontWeight: 600 }}>
+                  <td className="col-total" data-label={t('colTotal')}>{fmtCurrency(entry.totalCost)}</td>
+                  <td data-label={`${t('colDistance')} (${distanceLabel})`}>{entry.distance ? fmtDistance(entry.distance) : '-'}</td>
+                  <td data-label={`${t('colL100')} (${consumptionLabel})`} style={{ color: entry.consumption ? 'var(--accent-color)' : 'inherit', fontWeight: 600 }}>
                     {fmtConsumption(entry.consumption ?? null)}
                   </td>
-                  <td data-label={t('colCost100')}>{fmtCostPer100(entry.pricePer100km ?? null)}</td>
+                  <td data-label={`${t('colCost100')} (${costPer100Label})`}>{fmtCostPer100(entry.pricePer100km ?? null)}</td>
                   <td style={{ textAlign: 'right' }} className="actions-cell">
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                       <button 
